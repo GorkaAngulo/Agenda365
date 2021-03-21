@@ -2,6 +2,7 @@ package com.example.entrega1;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.DatePicker;
@@ -13,12 +14,13 @@ import androidx.fragment.app.DialogFragment;
 
 import java.util.Calendar;
 
-public class ClaseDialogoDatePicker extends DialogFragment implements DatePickerDialog.OnDateSetListener{
+public class ClaseDialogoDatePicker2  extends DialogFragment implements DatePickerDialog.OnDateSetListener{
 
-
+    android.content.Context contexto;
     TextView txt;
-    public ClaseDialogoDatePicker(TextView pTxt) {
+    public ClaseDialogoDatePicker2(TextView pTxt, android.content.Context cnt) {
         txt = pTxt;
+        contexto = cnt;
     }
     @NonNull
     @Override
@@ -30,6 +32,14 @@ public class ClaseDialogoDatePicker extends DialogFragment implements DatePicker
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog eldialogo = new DatePickerDialog(getActivity(),this, year,month,day);
+        eldialogo.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                Intent i = new Intent (contexto, TareasDeUnDia.class);
+                i.putExtra("fecha",txt.getText().toString());
+                startActivity(i);
+            }
+        });
         return eldialogo;
     }
 

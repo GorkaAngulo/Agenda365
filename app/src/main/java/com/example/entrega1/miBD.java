@@ -33,16 +33,9 @@ public class miBD extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE Usuarios ('nUsuario' PRIMARY KEY " +
                 "NOT NULL, 'pass' PASSWORD(255))");
 
-        // ARTISTAS
-        db.execSQL("CREATE TABLE Artistas ('ID' PRIMARY KEY " +
-                "NOT NULL, 'NombreCompleto' VARCHAR(255), 'Nacimiento' VARCHAR(255), " +
-                "'Muerte' VARCHAR(255))");
-
-
-        // ÁLBUMES
-        db.execSQL("CREATE TABLE Álbumes ('ID' PRIMARY KEY " +
-                "NOT NULL, 'Titulo' VARCHAR(255), 'Autor' VARCHAR(255), " +
-                "'Género' VARCHAR(255), 'Nº Canciones' INTEGER)");
+        // TAREAS
+        db.execSQL("CREATE TABLE Tareas ('Titulo' VARCHAR(50) PRIMARY KEY NOT NULL, 'Fecha' VARCHAR(255), " +
+                "'Cuerpo' VARCHAR(255))");
     }
 
     @Override
