@@ -52,13 +52,12 @@ public class TareasDeUnDia extends AppCompatActivity {
         SQLiteDatabase bd = miBD.getInstance(getBaseContext()).getWritableDatabase();
         String[] campos = new String[] {"Titulo","Fecha"};
         String[] argumentos = new String[] {};
-
+//SE EJECUTA LA SENTENCIA SQL
         Cursor c = bd.query("Tareas",campos,"",argumentos,null,null,null);
         Calendar calendar = Calendar.getInstance();
         int mes = calendar.get(Calendar.MONTH)+1;
 
-        while (c.moveToNext()){
-            Log.i("aaa","dentrosss");
+        while (c.moveToNext()){//COGE SOLO LAS TAREAS DE LA FECHA ACTUAL
             if(c.getString(1)==calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mes +"-"+calendar.get(Calendar.YEAR)) {
                 titulos.add(c.getString(0));
                 fechas.add(c.getString(1));

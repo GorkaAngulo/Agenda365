@@ -42,10 +42,10 @@ public class Registrar extends AppCompatActivity {
 
                 String[] campos = new String[] {"nUsuario"};
                 String[] argumentos = new String[] {usu.getText().toString()};
-
+//SE EJECUTA LA SENTENCIA SQL
                 Cursor c = bd.query("Usuarios",campos,"nUsuario=?",argumentos,null,null,null);
 
-                if (c.moveToNext()){
+                if (c.moveToNext()){//SI TIENE ALGUN RESULTADO MUESTRA UN TOAST INDICANDO QUE YA EXISTE
                     int tiempo = Toast.LENGTH_SHORT;
                     Toast aviso = Toast.makeText(getBaseContext(), "Usuario ya existente.", tiempo);
                     aviso.setGravity(Gravity.BOTTOM | Gravity.CENTER, 23, 17);

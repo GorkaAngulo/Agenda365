@@ -40,10 +40,10 @@ public class ListadoTareas extends AppCompatActivity {
         SQLiteDatabase bd = miBD.getInstance(getBaseContext()).getWritableDatabase();
         String[] campos = new String[] {"Titulo","Fecha"};
         String[] argumentos = new String[] {};
-
+//SE EJECUTA LA SENTENCIA SQL
         Cursor c = bd.query("Tareas",campos,"",argumentos,null,null,null);
 
-        while (c.moveToNext()){
+        while (c.moveToNext()){//POR CADA RESULTADO SE AÑADEN A LOS ARRAYS DE TITULOS Y FECHAS PARA MOSTRARLOS EN EL LISTADO
             titulos.add(c.getString(0));
             fechas.add((c.getString(1)));
         }
@@ -100,22 +100,5 @@ public class ListadoTareas extends AppCompatActivity {
             }
         });
 
-//        int[] personajes={R.drawable.ic_launcher_background,R.drawable.ic_launcher_background,R.drawable.ic_launcher_background,R.drawable.ic_launcher_background,R.drawable.ic_launcher_background};
-//        String[] nombres={"Bart Simpson","Edna Krabappel","Homer Simpson","Lisa Simpson","Seymour Skinner"};
-//        double[] valoracion={3.2,2.4,4.6,4.9,3.0};
-//        AdaptadorListView eladap= new AdaptadorListView(getApplicationContext(),nombres,personajes,valoracion);
-//        lista.setAdapter(eladap);
-    }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 666 && resultCode == RESULT_OK) {
-            String requiredValue = data.getStringExtra("nuevaTask");
-            String requiredValue2 = data.getStringExtra("fecha");
-            titulos.add(requiredValue);
-            fechas.add(requiredValue2);
-            eladaptador.notifyDataSetChanged();
-        }
     }
 }

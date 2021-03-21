@@ -43,7 +43,7 @@ public class ClaseDialogoDatePicker extends DialogFragment implements DatePicker
 
     private String twoDigits(int day) {
         return (day<10) ? ("0"+day) : String.valueOf(day);
-    }
+    } // METODO QUE SE ASEGURA DE QUE LOS DIAS Y LOS MESES TENGAN DOS DIGITOS SIEMPRE
 
 
 }
