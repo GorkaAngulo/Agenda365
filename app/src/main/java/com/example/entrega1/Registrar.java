@@ -1,17 +1,17 @@
 package com.example.entrega1;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
 
 public class Registrar extends AppCompatActivity {
 
@@ -26,7 +26,7 @@ public class Registrar extends AppCompatActivity {
         btnVolver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent (getBaseContext(), MainActivity.class);
+                Intent i = new Intent(getBaseContext(), MainActivity.class);
                 startActivity(i);
                 finish();
             }
@@ -38,30 +38,48 @@ public class Registrar extends AppCompatActivity {
                 TextView usu = findViewById(R.id.usuNuevo);
                 TextView pass = findViewById(R.id.passNueva);
 
-                SQLiteDatabase bd = miBD.getInstance(getBaseContext()).getWritableDatabase();
-
-                String[] campos = new String[] {"nUsuario"};
-                String[] argumentos = new String[] {usu.getText().toString()};
-//SE EJECUTA LA SENTENCIA SQL
-                Cursor c = bd.query("Usuarios",campos,"nUsuario=?",argumentos,null,null,null);
-
-                if (c.moveToNext()){//SI TIENE ALGUN RESULTADO MUESTRA UN TOAST INDICANDO QUE YA EXISTE
-                    int tiempo = Toast.LENGTH_SHORT;
-                    Toast aviso = Toast.makeText(getBaseContext(), "Usuario ya existente.", tiempo);
-                    aviso.setGravity(Gravity.BOTTOM | Gravity.CENTER, 23, 17);
-                    aviso.show();
-                }
-                else{
-                    ContentValues insert = new ContentValues();
-                    insert.put("nUsuario", usu.getText().toString());
-                    insert.put("pass", pass.getText().toString());
-
-                    bd.insert("Usuarios", null, insert);
-                    Intent i = new Intent (getBaseContext(), MainActivity.class);
-                    startActivity(i);
-                    finish();
-                }
+                gestionarConexion2(usu, pass);
             }
         });
+    }
+
+    private void gestionarConexion(TextView usu, TextView pass) {
+        Data datos = new Data.Builder().putString("usuario", usu.getText().toString()).build();
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(ConexionBDAWS_registro1.class).setInputData(datos).build();
+        WorkManager.getInstance(getBaseContext()).getWorkInfoByIdLiveData(otwr.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.getState().isFinished()) {
+//                            if (workInfo.getOutputData().getString("resultado").equals("true")) {
+//                                int tiempo = Toast.LENGTH_SHORT;
+//                                Toast aviso = Toast.makeText(getBaseContext(), "Usuario ya existente.", tiempo);
+//                                aviso.setGravity(Gravity.BOTTOM | Gravity.CENTER, 23, 17);
+//                                aviso.show();
+//                            } else {
+                            gestionarConexion2(usu, pass);
+//                            }
+                        }
+                    }
+                });
+        WorkManager.getInstance(getBaseContext()).enqueue(otwr);
+    }
+
+    private void gestionarConexion2(TextView usu, TextView pass) {
+        Data datos = new Data.Builder().putString("usuario", usu.getText().toString()).
+                putString("contraseña", pass.getText().toString()).build();
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(ConexionBDAWS_registro2.class).setInputData(datos).build();
+        WorkManager.getInstance(getBaseContext()).getWorkInfoByIdLiveData(otwr.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.getState().isFinished()) {
+                            Intent i = new Intent(getBaseContext(), MainActivity.class);
+                            startActivity(i);
+                            finish();
+                        }
+                    }
+                });
+        WorkManager.getInstance(getBaseContext()).enqueue(otwr);
     }
 }

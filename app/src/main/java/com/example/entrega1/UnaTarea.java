@@ -1,11 +1,6 @@
 package com.example.entrega1;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -14,7 +9,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
 
 import java.util.Calendar;
 
@@ -39,20 +39,33 @@ public class UnaTarea extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            valor= extras.getString("titulo");
+            valor = extras.getString("titulo");
         }
 
-        SQLiteDatabase bd = miBD.getInstance(getBaseContext()).getWritableDatabase();
-        String[] campos = new String[] {"Fecha","Cuerpo"};
-        String[] argumentos = new String[] {valor};
+        Data datos = new Data.Builder().putString("titulo", valor).build();
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(ConexionBDAWS_unaTarea.class).setInputData(datos).build();
+        WorkManager.getInstance(getBaseContext()).getWorkInfoByIdLiveData(otwr.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.getState().isFinished()) {
 
-        Cursor c = bd.query("Tareas",campos,"Titulo=?",argumentos,null,null,null);
+                        }
+                    }
+                });
+        WorkManager.getInstance(getBaseContext()).enqueue(otwr);
 
-        while (c.moveToNext()){
-            titulo.setText(valor);
-            fecha.setText(c.getString(0));
-            cuerpo.setText(c.getString(1));
-        }
+//        SQLiteDatabase bd = miBD.getInstance(getBaseContext()).getWritableDatabase();
+//        String[] campos = new String[] {"Fecha","Cuerpo"};
+//        String[] argumentos = new String[] {valor};
+//
+//        Cursor c = bd.query("Tareas",campos,"Titulo=?",argumentos,null,null,null);
+//
+//        while (c.moveToNext()){
+//            titulo.setText(valor);
+//            fecha.setText(c.getString(0));
+//            cuerpo.setText(c.getString(1));
+//        }
 
         fecha.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,18 +78,14 @@ public class UnaTarea extends AppCompatActivity {
         btnEliminar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String[] argumentos = new String[] {valor};
-                bd.delete("Tareas", "Titulo=?", argumentos);
-                Intent i = new Intent(getBaseContext(),ListadoTareas.class);
-                startActivity(i);
-                finish();
+                gestionarConexion2(valor);
             }
         });
 
         btnVovler.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(),ListadoTareas.class);
+                Intent i = new Intent(getBaseContext(), ListadoTareas.class);
                 startActivity(i);
                 finish();
             }
@@ -85,21 +94,22 @@ public class UnaTarea extends AppCompatActivity {
         btnModificar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (esMasAntiguaQueActual(fecha.getText().toString())){
+                if (esMasAntiguaQueActual(fecha.getText().toString())) {
                     int tiempo = Toast.LENGTH_SHORT;
                     Toast aviso = Toast.makeText(getBaseContext(), "La fecha introducida es más antigua que la actual.", tiempo);
                     aviso.setGravity(Gravity.BOTTOM | Gravity.CENTER, 23, 17);
                     aviso.show();
-                }
-                else {
-                    ContentValues modificacion = new ContentValues();
-                    modificacion.put("Fecha", fecha.getText().toString());
-                    modificacion.put("Cuerpo", cuerpo.getText().toString());
-                    String[] argumentos = new String[]{valor};
-                    bd.update("Tareas", modificacion, "Titulo=?", argumentos);
-                    Intent i = new Intent(getBaseContext(), ListadoTareas.class);
-                    startActivity(i);
-                    finish();
+                } else {
+                    gestionarConexion(valor, fecha.getText().toString(), cuerpo.getText().toString());
+
+//                    ContentValues modificacion = new ContentValues();
+//                    modificacion.put("Fecha", fecha.getText().toString());
+//                    modificacion.put("Cuerpo", cuerpo.getText().toString());
+//                    String[] argumentos = new String[]{valor};
+//                    bd.update("Tareas", modificacion, "Titulo=?", argumentos);
+//                    Intent i = new Intent(getBaseContext(), ListadoTareas.class);
+//                    startActivity(i);
+//                    finish();
                 }
             }
         });
@@ -109,6 +119,42 @@ public class UnaTarea extends AppCompatActivity {
     private boolean esMasAntiguaQueActual(String fecha) {
         String[] x = fecha.split("-");
         Calendar calendar = Calendar.getInstance();
-        return parseInt(x[0])<calendar.get(Calendar.DAY_OF_MONTH) || parseInt(x[1])<calendar.get(Calendar.MONTH)+1 || parseInt(x[2])<calendar.get(Calendar.YEAR);
+        return parseInt(x[0]) < calendar.get(Calendar.DAY_OF_MONTH) || parseInt(x[1]) < calendar.get(Calendar.MONTH) + 1 || parseInt(x[2]) < calendar.get(Calendar.YEAR);
+    }
+
+    private void gestionarConexion(String titulo, String fecha, String cuerpo) {
+        Data datos = new Data.Builder().putString("titulo", titulo).
+                putString("fecha", fecha).
+                putString("cuerpo", cuerpo).build();
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(ConexionBDAWS_modificarTarea.class).setInputData(datos).build();
+        WorkManager.getInstance(getBaseContext()).getWorkInfoByIdLiveData(otwr.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.getState().isFinished()) {
+                            Intent i = new Intent(getBaseContext(), ListadoTareas.class);
+                            startActivity(i);
+                            finish();
+                        }
+                    }
+                });
+        WorkManager.getInstance(getBaseContext()).enqueue(otwr);
+    }
+
+    private void gestionarConexion2(String titulo) {
+        Data datos = new Data.Builder().putString("titulo", titulo).build();
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(ConexionBDAWS_borrarTarea.class).setInputData(datos).build();
+        WorkManager.getInstance(getBaseContext()).getWorkInfoByIdLiveData(otwr.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.getState().isFinished()) {
+                            Intent i = new Intent(getBaseContext(), ListadoTareas.class);
+                            startActivity(i);
+                            finish();
+                        }
+                    }
+                });
+        WorkManager.getInstance(getBaseContext()).enqueue(otwr);
     }
 }
