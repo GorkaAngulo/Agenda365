@@ -32,7 +32,7 @@ public class ListadoTareas extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_listado_tareas);
 
-        ImageView avatar = findViewById(R.id.avatar);
+        ImageView avatar = findViewById(R.id.avatar2);
         ListView lista = findViewById(R.id.lista);
         Button btnAdd = findViewById(R.id.btnAdd2);
         Button btnMostrarHoy = findViewById(R.id.btnMostrarHoy);
@@ -117,7 +117,9 @@ public class ListadoTareas extends AppCompatActivity {
         avatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent i = new Intent(getBaseContext(), Perfil.class);
+                startActivity(i);
+                finish();
             }
         });
 
